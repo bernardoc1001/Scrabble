@@ -10,7 +10,8 @@ import java.util.ArrayList;
 public class GameServer
 {
     Board gameBoard;
-    HashMap<Integer, String> playerData;
+    HashMap<String, Int> playerData;
+    ArrayList<Characters> lettersToRack;
     Bag bag;
     DictSearch dictionary;
 
@@ -117,15 +118,28 @@ public class GameServer
         return true;
     }
 
-    public void updatePlayer(int player, int score, char[] lettersToReturn)
+    public void updatePlayer(String playerName, int score, char[] lettersToReturn)
     {
         //update specified player with specified data
+
+        //update the player's score
+        int oldScore = playerData.get(playerName);
+        playerData.replace(playerName, (oldScore + score));
+
+        //update the letters to be returned to the player
+        lettersToRack.clear();
+        for(int i = 0; i < lettersToReturn.length; i++)
+        {
+            lettersToRack.add(lettersToReturn[i]);
+        }
+
+
     }
 
-    public void executeMove(CellSetter[] lettersPlayed)
+    public boolean executeMove(CellSetter[] lettersPlayed, String playerName)
     {
-        int playerID = 666;
         char[] lettersToReturn;
+        boolean lettersArePlaced = false;
         int score = 0;
 
         //A normal play tiles move
@@ -133,11 +147,11 @@ public class GameServer
         {
             //place tiles
             updateBoard(lettersPlayed);
+            lettersArePlaced = true;
+
             //calculate score
             ArrayList<WordPosition> wordPos = BoardReader.getWordPositions(lettersPlayed, gameBoard);
             score = BoardReader.getScores(lettersPlayed, wordPos, gameBoard);
-
-            //HOW TO ASSIGN THE SCORE????????????????????????
 
             //pull tiles from bag == to length of lettersPlayed
             lettersToReturn = new char[lettersPlayed.length];
@@ -154,8 +168,9 @@ public class GameServer
             }
         }
         //update the player after move execution
-        updatePlayer(playerID,score,lettersToReturn);
+        updatePlayer(playerName,score,lettersToReturn);
 
+        return lettersArePlaced;
     }
 
     public static boolean checkConnections(ClientThread[] clients)
